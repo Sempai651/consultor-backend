@@ -8,7 +8,7 @@ import { ResponseUtil } from '@utils/response.util'
 declare global {
   namespace Express {
     interface Request {
-      user?: { id: number; email: string }
+      user?: { id: number; cedula: string }
     }
   }
 }

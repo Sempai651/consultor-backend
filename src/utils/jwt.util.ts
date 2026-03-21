@@ -4,7 +4,7 @@ import { envs } from '@config/envs'
 // Qué información viaja dentro del token
 interface TokenPayload {
   id: number
-  email: string
+  cedula: string
 }
 
 export class JwtUtil {

@@ -11,7 +11,7 @@ const getEnv = (key: string): string => {
 export const envs = {
     // Servidor por el momento 
 
-    PORT: parseInt('DB_HOST'),
+    PORT: parseInt(getEnv('PORT')),
     NODE_ENV: getEnv('NODE_ENV'),
 
     //Base de datos
