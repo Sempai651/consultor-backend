@@ -20,10 +20,10 @@ export class AuthController {
       return
     }
 
-    // 2. Llamar al service
+    //  Llamar al service
     const result = await authService.register(req.body)
 
-    // 3. Responder
+    // Responder
     ResponseUtil.success(res, 'Usuario registrado exitosamente', result, 201)
   }
 
@@ -53,6 +53,14 @@ export class AuthController {
       'Si el email existe, recibirás un enlace de recuperación'
     )
   }
+  async logout(req: Request, res: Response): Promise<void> {
+  // El token viene del header Authorization
+  const token = req.headers.authorization!.split(' ')[1]
+
+  await authService.logout(token)
+
+  ResponseUtil.success(res, 'Sesión cerrada exitosamente')
+}
 
   async nuevaClave(req: Request, res: Response): Promise<void> {
     const { token } = req.params

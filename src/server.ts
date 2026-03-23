@@ -8,6 +8,8 @@ import { envs } from '@config/envs'
 import { errorMiddleware } from '@middlewares/error.middleware'
 import { syncModels } from '@models/index'         
 import router from '@routes/index'
+import { Op } from 'sequelize'
+import {TokenBlacklist} from '@models/index'
 
 const app = express()
 
@@ -25,6 +27,20 @@ app.use('/api', router)
 // El middleware de errores SIEMPRE va al final
 app.use(errorMiddleware)
 
+// Limpia tokens vencidos cada 24 horas
+const limpiarTokensVencidos = () => {
+  setInterval(async () => {
+    await TokenBlacklist.destroy({
+      where: {
+        expiracion: {
+          [Op.lt]: new Date()   
+        }
+      }
+    })
+    console.log('🧹 Tokens vencidos limpiados')
+  }, 24 * 60 * 60 * 1000)     
+}
+
 const startServer = async (): Promise<void> => {
   await connectDB()       
   await syncModels()      
@@ -35,7 +51,5 @@ const startServer = async (): Promise<void> => {
     console.log(` Swagger en http://localhost:${envs.PORT}/api-docs`)
   })
 }
-
+limpiarTokensVencidos()
 startServer()
-
-

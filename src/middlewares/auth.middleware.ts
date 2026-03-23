@@ -1,21 +1,13 @@
-
 import { Request, Response, NextFunction } from 'express'
 import { JwtUtil } from '@utils/jwt.util'
 import { ResponseUtil } from '@utils/response.util'
+import { TokenBlacklist } from '@models/index'
 
-// Extendemos Request de Express para agregar el usuario autenticado
+declare global { namespace Express {interface Request {user?: { id: number; cedula: string }}}}
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: { id: number; cedula: string }
-    }
-  }
-}
 
-export const authMiddleware = (req: Request,res: Response,next: NextFunction): void => {
+export const authMiddleware = async ( req: Request,res: Response,next: NextFunction): Promise<void> => {
 
-  // El token viaja en el header 
   const authHeader = req.headers.authorization
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -25,8 +17,14 @@ export const authMiddleware = (req: Request,res: Response,next: NextFunction): v
 
   const token = authHeader.split(' ')[1]
 
-  // Verifica si el token es valido o ya expiro 
+  // Verificar que el token no esté en la blacklist
+  const tokenInvalidado = await TokenBlacklist.findOne({ where: { token } })
+  if (tokenInvalidado) {
+    ResponseUtil.error(res, 'Sesión cerrada. Inicia sesión nuevamente', 401)
+    return
+  }
+
   const payload = JwtUtil.verify(token)
-  req.user = payload  
-  next()              
+  req.user = payload
+  next()
 }

@@ -2,6 +2,7 @@
 import { Router } from 'express'
 import { AuthController } from './auth.controller'
 import { catchAsync } from '@utils/catchAsync.util'
+import { authMiddleware } from '@middlewares/auth.middleware'
 
 const router = Router()
 const authController = new AuthController()
@@ -191,6 +192,22 @@ router.post('/nueva-clave/:token', catchAsync(authController.nuevaClave.bind(aut
  */
 router.get('/restablecer-clave-web/:token', 
   catchAsync(authController.restablecerClaveWeb.bind(authController)))
+
+  /**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Cerrar sesión e invalidar token
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Sesión cerrada exitosamente
+ *       401:
+ *         description: Token no proporcionado
+ */
+router.post('/logout', authMiddleware,catchAsync(authController.logout.bind(authController)))
 
 
 

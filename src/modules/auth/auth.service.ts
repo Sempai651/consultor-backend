@@ -1,11 +1,13 @@
 import crypto from 'crypto'
 import { Usuario } from '@models/index'
+import {TokenBlacklist} from '@models/index'
 import { BcryptUtil } from '@utils/bcryp.tutil'
 import { JwtUtil } from '@utils/jwt.util'
 import { AuthResponse, RegisterDto, LoginDto } from '@interfaces/usuario.interface'
 import transporter from '@config/mailer'
 import { envs } from '@config/envs'
 import { AppError } from '@utils/AppError.util'
+
 
 export class AuthService {
 
@@ -131,4 +133,21 @@ export class AuthService {
       tokenExpiracion: null,
     })
   }
+  // Agregar este método en AuthService
+async logout(token: string): Promise<void> {
+
+  // Verificar que el token sea válido antes de invalidarlo
+  const payload = JwtUtil.verify(token)
+
+  // Calcular cuándo expira el token
+  
+  const expiracion = new Date((payload as any).exp * 1000)
+
+  // Guardar el token en la blacklist
+  await TokenBlacklist.create({
+    token,
+    expiracion,
+  })
+
+}
 }
