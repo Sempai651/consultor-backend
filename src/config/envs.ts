@@ -1,33 +1,31 @@
-import dotenv from 'dotenv'
-dotenv.config()
+import dotenv from 'dotenv';
 
-const getEnv = (key: string): string => {
-    const value = process.env[key]
-    if (!value) {
-        throw new Error(`Variable de entorno faltante: ${key}`)
-    }
-    return value
-}
+dotenv.config();
+
+export const getEnv = (key: string, defaultValue?: string): string => {
+  const value = process.env[key];
+  if (!value && defaultValue === undefined) {
+    console.warn(`⚠️ Variable ${key} no definida, usando valor por defecto`);
+    return '';
+  }
+  return value || defaultValue || '';
+};
+
 export const envs = {
-    // Servidor por el momento 
+  PORT: parseInt(getEnv('PORT', '3000')),
+  NODE_ENV: getEnv('NODE_ENV', 'development'),
+  JWT_SECRET: getEnv('JWT_SECRET', 'mi_clave_secreta_david_2025'),
+  JWT_EXPIRES_IN: getEnv('JWT_EXPIRES_IN', '24h'),
 
-    PORT: parseInt(getEnv('PORT')),
-    NODE_ENV: getEnv('NODE_ENV'),
+  // SQLite
+  DB_DIALECT: getEnv('DB_DIALECT', 'sqlite'),
+  DB_STORAGE: getEnv('DB_STORAGE', './database.sqlite'),
 
-    //Base de datos
-  DB_HOST: getEnv('DB_HOST'),
-  DB_PORT: parseInt(getEnv('DB_PORT')),
-  DB_NAME: getEnv('DB_NAME'),
-  DB_USER: getEnv('DB_USER'),
-  DB_PASSWORD: getEnv('DB_PASSWORD'),
+  // SMTP
+  SMTP_HOST: getEnv('SMTP_HOST', 'smtp.gmail.com'),
+  SMTP_PORT: parseInt(getEnv('SMTP_PORT', '587')),
+  SMTP_USER: getEnv('SMTP_USER', 'dm5447566@gmail.com'),
+  SMTP_PASS: getEnv('SMTP_PASS', 'Men2002@20'),
+};
 
-  // JWT
-   JWT_SECRET: getEnv('JWT_SECRET'),
-  JWT_EXPIRES_IN: getEnv('JWT_EXPIRES_IN'),
-
-  // Email
-  SMTP_HOST: getEnv('SMTP_HOST'),
-  SMTP_PORT: parseInt(getEnv('SMTP_PORT')),
-  SMTP_USER: getEnv('SMTP_USER'),
-  SMTP_PASS: getEnv('SMTP_PASS'),
-}
+export const env = envs;

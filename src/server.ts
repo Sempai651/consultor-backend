@@ -1,55 +1,40 @@
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import { connectDB } from '@config/database';
+import { envs } from '@config/envs';
+import authRoutes from '@modules/auth/auth.routes';
+import { setupSwagger } from '@config/swagger';  
 
-import express from 'express'
-import cors from 'cors'
-import { connectDB } from '@config/database'
-import { verifyMailer } from '@config/mailer'
-import { setupSwagger } from '@config/swagger'    
-import { envs } from '@config/envs'
-import { errorMiddleware } from '@middlewares/error.middleware'
-import { syncModels } from '@models/index'         
-import router from '@routes/index'
-import { Op } from 'sequelize'
-import {TokenBlacklist} from '@models/index'
+const app = express();
 
-const app = express()
+// Middlewares
+app.use(cors());
+app.use(express.json());
+app.use(morgan('dev'));
 
-// Middlewares globales
-app.use(cors())
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+// Routes
+app.use('/api/auth', authRoutes);
 
-// Swagger 
-setupSwagger(app)
+// Swagger
+setupSwagger(app);
 
-// Rutas de la API
-app.use('/api', router)
+// Health check
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Server is running' });
+});
 
-// El middleware de errores SIEMPRE va al final
-app.use(errorMiddleware)
+// Iniciar servidor
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(envs.PORT, () => {
+      console.log(`🚀 Servidor corriendo en http://localhost:${envs.PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ Error al iniciar el servidor:', error);
+    process.exit(1);
+  }
+};
 
-// Limpia tokens vencidos cada 24 horas
-const limpiarTokensVencidos = () => {
-  setInterval(async () => {
-    await TokenBlacklist.destroy({
-      where: {
-        expiracion: {
-          [Op.lt]: new Date()   
-        }
-      }
-    })
-    console.log('🧹 Tokens vencidos limpiados')
-  }, 24 * 60 * 60 * 1000)     
-}
-
-const startServer = async (): Promise<void> => {
-  await connectDB()       
-  await syncModels()      
-  await verifyMailer()    
-
-  app.listen(envs.PORT, () => {
-    console.log(` Servidor en http://localhost:${envs.PORT}`)
-    console.log(` Swagger en http://localhost:${envs.PORT}/api-docs`)
-  })
-}
-limpiarTokensVencidos()
-startServer()
+startServer();
