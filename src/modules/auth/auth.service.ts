@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { Usuario } from '@models/index'
-import {TokenBlacklist} from '@models/index'
+import { TokenBlacklist } from '@models/index'
 import { BcryptUtil } from '@utils/bcryp.tutil'
 import { JwtUtil } from '@utils/jwt.util'
 import { AuthResponse, RegisterDto, LoginDto } from '@interfaces/usuario.interface'
@@ -8,12 +8,10 @@ import transporter from '@config/mailer'
 import { envs } from '@config/envs'
 import { AppError } from '@utils/AppError.util'
 
-
 export class AuthService {
 
   //  REGISTRO 
   async register(data: RegisterDto): Promise<AuthResponse> {
-
     const existeCedula = await Usuario.findOne({ where: { cedula: data.cedula } })
     if (existeCedula) throw new AppError('La cédula ya está registrada', 400)
 
@@ -30,7 +28,6 @@ export class AuthService {
       password: passwordHash,
     })
 
-    
     const token = JwtUtil.generate({ id: usuario.id, cedula: usuario.cedula })
 
     return {
@@ -44,9 +41,8 @@ export class AuthService {
     }
   }
 
-  //LOGIN
+  // LOGIN
   async login(data: LoginDto): Promise<AuthResponse> {
-
     const usuario = await Usuario.findOne({ where: { cedula: data.cedula } })
     if (!usuario) throw new AppError('Credenciales incorrectas', 401)
 
@@ -55,7 +51,6 @@ export class AuthService {
     const passwordValida = await BcryptUtil.compare(data.password, usuario.password)
     if (!passwordValida) throw new AppError('Credenciales incorrectas', 401)
 
-    // ← CORREGIDO: usuario.cedula no usuario.email
     const token = JwtUtil.generate({ id: usuario.id, cedula: usuario.cedula })
 
     return {
@@ -69,14 +64,12 @@ export class AuthService {
     }
   }
 
-  // RECUPERAR CLAVE 
+  // RECUPERAR CLAVE (MODIFICADO - muestra enlace en consola)
   async recuperarClave(email: string): Promise<void> {
-
     const usuario = await Usuario.findOne({ where: { email } })
     if (!usuario) return
 
     const token = crypto.randomBytes(32).toString('hex')
-
     const expiracion = new Date()
     expiracion.setHours(expiracion.getHours() + 1)
 
@@ -85,35 +78,49 @@ export class AuthService {
       tokenExpiracion: expiracion,
     })
 
-    await transporter.sendMail({
-      from: `"Consultor App" <${envs.SMTP_USER}>`,
-      to: email,
-      subject: 'Recuperación de contraseña',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2A4494;">Recuperar contraseña</h2>
-          <p>Haz clic en el siguiente botón para recuperar tu contraseña:</p>
-          <a 
-            href="http://localhost:3000/api/auth/restablecer-clave-web/${token}"
-            style="background-color: #2A4494; color: white; padding: 12px 24px; 
-                   text-decoration: none; border-radius: 8px; display: inline-block;"
-          >
-            Recuperar contraseña
-          </a>
-          <p style="color: #666; margin-top: 20px;">
-            Este enlace vence en <strong>1 hora</strong>.
-          </p>
-          <p style="color: #999; font-size: 12px;">
-            Si no solicitaste este cambio, ignora este mensaje.
-          </p>
-        </div>
-      `,
-    })
+    //Enlace para pruebas (se muestra en consola)
+    const enlace = `http://localhost:3000/recuperar.html?token=${token}`;
+    console.log('\n========== ENLACE DE RECUPERACIÓN ==========');
+    console.log(`Copia este enlace y pégalo en tu navegador:`);
+    console.log(enlace);
+    console.log('Este enlace expira en 1 hora');
+    console.log('=============================================\n');
+
+    // Intentar enviar correo (si falla, no detiene la ejecución)
+    try {
+      await transporter.sendMail({
+        from: `"Consultor App" <${envs.SMTP_USER}>`,
+        to: email,
+        subject: 'Recuperación de contraseña',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2A4494;">Recuperar contraseña</h2>
+            <p>Haz clic en el siguiente botón para recuperar tu contraseña:</p>
+            <a 
+              href="${enlace}"
+              style="background-color: #2A4494; color: white; padding: 12px 24px; 
+                     text-decoration: none; border-radius: 8px; display: inline-block;"
+            >
+              Recuperar contraseña
+            </a>
+            <p style="color: #666; margin-top: 20px;">
+              Este enlace vence en <strong>1 hora</strong>.
+            </p>
+            <p style="color: #999; font-size: 12px;">
+              Si no solicitaste este cambio, ignora este mensaje.
+            </p>
+          </div>
+        `,
+      });
+      console.log('Correo enviado correctamente');
+    } catch (error: any) {
+      console.error('Error al enviar correo:', error?.message || error);
+      console.log('Usa el enlace de consola para continuar');
+    }
   }
 
-  //  NUEVA CLAVE 
+  // NUEVA CLAVE 
   async nuevaClave(token: string, nuevaPassword: string): Promise<void> {
-
     const usuario = await Usuario.findOne({
       where: { tokenRecuperacion: token },
     })
@@ -133,21 +140,15 @@ export class AuthService {
       tokenExpiracion: null,
     })
   }
-  // Agregar este método en AuthService
-async logout(token: string): Promise<void> {
 
-  // Verificar que el token sea válido antes de invalidarlo
-  const payload = JwtUtil.verify(token)
+  // LOGOUT
+  async logout(token: string): Promise<void> {
+    const payload = JwtUtil.verify(token)
+    const expiracion = new Date((payload as any).exp * 1000)
 
-  // Calcular cuándo expira el token
-  
-  const expiracion = new Date((payload as any).exp * 1000)
-
-  // Guardar el token en la blacklist
-  await TokenBlacklist.create({
-    token,
-    expiracion,
-  })
-
-}
+    await TokenBlacklist.create({
+      token,
+      expiracion,
+    })
+  }
 }

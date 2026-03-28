@@ -1,4 +1,3 @@
-
 import { Router } from 'express'
 import { AuthController } from './auth.controller'
 import { catchAsync } from '@utils/catchAsync.util'
@@ -179,22 +178,6 @@ router.post('/nueva-clave/:token', catchAsync(authController.nuevaClave.bind(aut
 
 /**
  * @swagger
- * /auth/restablecer-clave-web/{token}:
- *   get:
- *     summary: Formulario web para restablecer contraseña
- *     tags: [Auth]
- *     parameters:
- *       - in: path
- *         name: token
- *         required: true
- *         schema:
- *           type: string
- */
-router.get('/restablecer-clave-web/:token', 
-  catchAsync(authController.restablecerClaveWeb.bind(authController)))
-
-  /**
- * @swagger
  * /auth/logout:
  *   post:
  *     summary: Cerrar sesión e invalidar token
@@ -207,8 +190,6 @@ router.get('/restablecer-clave-web/:token',
  *       401:
  *         description: Token no proporcionado
  */
-router.post('/logout', authMiddleware,catchAsync(authController.logout.bind(authController)))
-
-
+router.post('/logout', authMiddleware, catchAsync(authController.logout.bind(authController)))
 
 export default router

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restablecer Contraseña - BEGROUP</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #0A2472 0%, #2A4494 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo-circle {
+      width: 60px;
+      height: 60px;
+      background: #E6B91E;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+    }
+    .logo-circle span {
+      font-size: 32px;
+      font-weight: bold;
+      color: white;
+    }
+    h1 {
+      font-size: 24px;
+      color: #0A2472;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #666;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    .input-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    .password-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    input {
+      width: 100%;
+      padding: 14px 45px 14px 16px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.3s;
+      background: white;
+    }
+    input:focus {
+      border-color: #0A2472;
+    }
+    .toggle-eye {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: #666;
+      transition: color 0.3s;
+      padding: 5px;
+    }
+    .toggle-eye:hover {
+      color: #0A2472;
+    }
+    .buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    button {
+      flex: 1;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: #0A2472;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #2A4494;
+    }
+    .btn-secondary {
+      background: #e9ecef;
+      color: #333;
+    }
+    .btn-secondary:hover {
+      background: #dee2e6;
+    }
+    .mensaje {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      display: none;
+    }
+    .exito {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .loading {
+      background: #e9ecef;
+      color: #6c757d;
+    }
+    .requisitos {
+      font-size: 12px;
+      color: #999;
+      margin-top: 8px;
+    }
+    .requisitos ul {
+      margin-top: 5px;
+      padding-left: 20px;
+    }
+    .requisitos li {
+      margin: 3px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="logo-circle">
+        <span>B</span>
+      </div>
+      <h1>Restablecer Contraseña</h1>
+      <p>Ingresa tu nueva contraseña</p>
+    </div>
+
+    <div class="input-group">
+      <label>NUEVA CONTRASEÑA</label>
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Ingrese su nueva contraseña">
+        <button class="toggle-eye" onclick="togglePassword('password')">
+          <i class="fa-regular fa-eye-slash"></i>
+        </button>
+      </div>
+      <div class="requisitos">
+        <ul>
+          <li>Mínimo 8 caracteres</li>
+          <li>Al menos una mayúscula</li>
+          <li>Al menos una minúscula</li>
+          <li>Al menos un número</li>
+          <li>Al menos un carácter especial (@$!%*?&)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>CONFIRMAR CONTRASEÑA</label>
+      <div class="password-wrapper">
+        <input type="password" id="confirmPassword" placeholder="Confirme su nueva contraseña">
+        <button class="toggle-eye" onclick="togglePassword('confirmPassword')">
+          <i class="fa-regular fa-eye-slash"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button id="btnActualizar" class="btn-primary">ACTUALIZAR</button>
+      <button id="btnLogin" class="btn-secondary">LOGIN</button>
+    </div>
+
+    <div id="mensaje" class="mensaje"></div>
+  </div>
+
+  <script>
+    // Función para mostrar/ocultar contraseña con ícono tipo FontAwesome
+    function togglePassword(fieldId) {
+      const input = document.getElementById(fieldId);
+      const icon = input.parentElement.querySelector('.toggle-eye i');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-regular fa-eye';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-regular fa-eye-slash';
+      }
+    }
+
+    // Obtener token de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    const btnActualizar = document.getElementById('btnActualizar');
+    const btnLogin = document.getElementById('btnLogin');
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirmPassword');
+    const mensajeDiv = document.getElementById('mensaje');
+
+    function mostrarMensaje(texto, tipo) {
+      mensajeDiv.textContent = texto;
+      mensajeDiv.className = 'mensaje ' + tipo;
+      mensajeDiv.style.display = 'block';
+    }
+
+    function validarPassword(password) {
+      if (password.length < 8) return 'Mínimo 8 caracteres';
+      if (!/[a-z]/.test(password)) return 'Debe tener una letra minúscula';
+      if (!/[A-Z]/.test(password)) return 'Debe tener una letra mayúscula';
+      if (!/\d/.test(password)) return 'Debe tener un número';
+      if (!/[@$!%*?&]/.test(password)) return 'Debe tener un carácter especial (@$!%*?&)';
+      return '';
+    }
+
+    // Botón Login - ir al login
+    btnLogin.onclick = () => {
+      window.location.href = 'http://localhost:19006/';
+    };
+
+    // Botón Actualizar
+    btnActualizar.onclick = async () => {
+      const password = passwordInput.value;
+      const confirm = confirmInput.value;
+
+      const error = validarPassword(password);
+      if (error) {
+        mostrarMensaje(error, 'error');
+        return;
+      }
+
+      if (password !== confirm) {
+        mostrarMensaje('Las contraseñas no coinciden', 'error');
+        return;
+      }
+
+      if (!token) {
+        mostrarMensaje('Token inválido o expirado', 'error');
+        return;
+      }
+
+      btnActualizar.disabled = true;
+      btnActualizar.textContent = 'PROCESANDO...';
+      mostrarMensaje('Actualizando contraseña...', 'loading');
+
+      try {
+        const response = await fetch(`http://localhost:3000/api/auth/nueva-clave/${token}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          mostrarMensaje('Contraseña actualizada exitosamente', 'exito');
+          btnActualizar.textContent = 'ACTUALIZAR';
+          btnActualizar.disabled = false;
+          passwordInput.value = '';
+          confirmInput.value = '';
+        } else {
+          mostrarMensaje(data.message || 'Error al actualizar', 'error');
+          btnActualizar.textContent = 'ACTUALIZAR';
+          btnActualizar.disabled = false;
+        }
+      } catch (error) {
+        mostrarMensaje('Error de conexión con el servidor', 'error');
+        btnActualizar.textContent = 'ACTUALIZAR';
+        btnActualizar.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>

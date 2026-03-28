@@ -10,11 +10,11 @@ const sequelize = new Sequelize({
 export const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log('📦 Base de datos SQLite conectada');
+    console.log('Base de datos SQLite conectada');
     await sequelize.sync({ alter: true });
-    console.log('📦 Modelos sincronizados');
+    console.log('Modelos sincronizados');
   } catch (error) {
-    console.error('❌ Error conectando a la base de datos:', error);
+    console.error('Error conectando a la base de datos:', error);
     throw error;
   }
 };

@@ -1,10 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import path from 'path';
 import { connectDB } from '@config/database';
 import { envs } from '@config/envs';
 import authRoutes from '@modules/auth/auth.routes';
-import { setupSwagger } from '@config/swagger';  
+import { setupSwagger } from '@config/swagger';
 
 const app = express();
 
@@ -12,6 +13,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
+
+// Servir archivos estáticos de la carpeta public
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Routes
 app.use('/api/auth', authRoutes);
