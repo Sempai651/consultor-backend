@@ -1,22 +1,32 @@
-import { Sequelize } from 'sequelize';
+import mysql from 'mysql2/promise';
 import { envs } from './envs';
 
-const sequelize = new Sequelize({
-  dialect: envs.DB_DIALECT as any,
-  storage: envs.DB_STORAGE,
-  logging: false,
-});
+let pool: mysql.Pool | null = null;
 
 export const connectDB = async () => {
   try {
-    await sequelize.authenticate();
-    console.log('Base de datos SQLite conectada');
-    await sequelize.sync({ alter: true });
-    console.log('Modelos sincronizados');
+    pool = mysql.createPool({
+      host: envs.DB_HOST,
+      port: envs.DB_PORT,
+      user: envs.DB_USER,
+      password: envs.DB_PASSWORD,
+      database: envs.DB_NAME,
+      waitForConnections: true,
+      connectionLimit: 10,
+    });
+    console.log('✅ Base de datos MySQL conectada');
+    return pool;
   } catch (error) {
-    console.error('Error conectando a la base de datos:', error);
+    console.error('❌ Error conectando a MySQL:', error);
     throw error;
   }
 };
 
-export default sequelize;
+export const getPool = () => {
+  if (!pool) {
+    throw new Error('Base de datos no conectada');
+  }
+  return pool;
+};
+
+export default { connectDB, getPool };

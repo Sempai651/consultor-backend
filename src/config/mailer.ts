@@ -1,8 +1,6 @@
 import nodemailer from 'nodemailer'
 import { envs } from '@config/envs'
 
-//Conexion con el server de correo
-
 const transporter = nodemailer.createTransport({
     host: envs.SMTP_HOST,
     port: envs.SMTP_PORT,
@@ -13,7 +11,6 @@ const transporter = nodemailer.createTransport({
     },
 })
 
-//Verificamos que la conexion  SMTP funcione al arrancar
 export const verifyMailer = async (): Promise<void> => {
     await transporter.verify()
     console.log('Conexion SMTP exitosa')

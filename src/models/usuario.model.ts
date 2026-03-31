@@ -1,92 +1,83 @@
-import { DataTypes, Model, Optional } from 'sequelize'
-import sequelize from '@config/database'
+import { getPool } from '@config/database';
+import { RowDataPacket, OkPacket } from 'mysql2';
 
-interface UsuarioAttributes {
-    id: number
-    nombre: string
-    apellido: string
-    cedula: string
-    email: string
-    password: string
-    activo: boolean
-    tokenRecuperacion: string | null
-    tokenExpiracion: Date | null
-    createdAt?: Date
-    updatedAt?: Date
+// Interfaz para los resultados de las consultas
+interface UsuarioRow extends RowDataPacket {
+  id: number;
+  nombre: string;
+  apellido: string;
+  cedula: string;
+  email: string;
+  password: string;
+  activo: number;
+  tokenRecuperacion: string | null;
+  tokenExpiracion: Date | null;
 }
 
-interface UsuarioCreationAttributes extends Optional<UsuarioAttributes, 
-    'id' | 'activo' | 'tokenRecuperacion' | 'tokenExpiracion'> {}
+export const UsuarioModel = {
+  // Buscar por cédula
+  findByCedula: async (cedula: string): Promise<UsuarioRow | null> => {
+    const pool = getPool();
+    const [rows] = await pool.execute<UsuarioRow[]>(
+      'SELECT * FROM usuarios WHERE cedula = ?',
+      [cedula]
+    );
+    return rows.length > 0 ? rows[0] : null;
+  },
 
-class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
-    implements UsuarioAttributes {
-    public id!: number
-    public nombre!: string
-    public apellido!: string
-    public cedula!: string
-    public email!: string
-    public password!: string
-    public activo!: boolean
-    public tokenRecuperacion!: string | null
-    public tokenExpiracion!: Date | null
-    public readonly createdAt!: Date
-    public readonly updatedAt!: Date
-}
+  // Buscar por email
+  findByEmail: async (email: string): Promise<UsuarioRow | null> => {
+    const pool = getPool();
+    const [rows] = await pool.execute<UsuarioRow[]>(
+      'SELECT * FROM usuarios WHERE email = ?',
+      [email]
+    );
+    return rows.length > 0 ? rows[0] : null;
+  },
 
-Usuario.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
-        nombre: {
-            type: DataTypes.STRING(100),
-            allowNull: false,
-        },
-        apellido: {
-            type: DataTypes.STRING(100),
-            allowNull: false,
-        },
-        cedula: {
-            type: DataTypes.STRING(10),     
-            allowNull: false,
-            unique: true,                   
-        },
+  // Buscar por token de recuperación
+  findByToken: async (token: string): Promise<UsuarioRow | null> => {
+    const pool = getPool();
+    const [rows] = await pool.execute<UsuarioRow[]>(
+      'SELECT * FROM usuarios WHERE tokenRecuperacion = ?',
+      [token]
+    );
+    return rows.length > 0 ? rows[0] : null;
+  },
 
-        email: {
-            type: DataTypes.STRING(150),
-            allowNull: false,
-            unique: true,
-            validate: {
-                isEmail: true,
-            },
-        },
-        password: {
-            type: DataTypes.STRING(255),
-            allowNull: false,
-        },
-        activo: {
-            type: DataTypes.BOOLEAN,
-            defaultValue: true,
-        },
-        tokenRecuperacion: {
-            type: DataTypes.STRING(255),
-            allowNull: true,
-        },
-        tokenExpiracion: {
-            type: DataTypes.DATE,
-            allowNull: true,
-        },
-    },
-    {
-        sequelize,
-        tableName: 'usuarios',
-        timestamps: true,   
-    }
-)
+  // Crear usuario
+  create: async (data: {
+    nombre: string;
+    apellido: string;
+    cedula: string;
+    email: string;
+    password: string;
+  }): Promise<UsuarioRow | null> => {
+    const pool = getPool();
+    const [result] = await pool.execute<OkPacket>(
+      `INSERT INTO usuarios (nombre, apellido, cedula, email, password) 
+       VALUES (?, ?, ?, ?, ?)`,
+      [data.nombre, data.apellido, data.cedula, data.email, data.password]
+    );
+    
+    const [newUser] = await pool.execute<UsuarioRow[]>(
+      'SELECT * FROM usuarios WHERE id = ?',
+      [result.insertId]
+    );
+    return newUser.length > 0 ? newUser[0] : null;
+  },
 
-export default Usuario
-
-
-
+  // Actualizar usuario
+  update: async (id: number, data: Record<string, any>): Promise<UsuarioRow | null> => {
+    const pool = getPool();
+    const fields = Object.keys(data).map(k => `${k} = ?`).join(', ');
+    const values = [...Object.values(data), id];
+    await pool.execute(`UPDATE usuarios SET ${fields} WHERE id = ?`, values);
+    
+    const [updated] = await pool.execute<UsuarioRow[]>(
+      'SELECT * FROM usuarios WHERE id = ?',
+      [id]
+    );
+    return updated.length > 0 ? updated[0] : null;
+  },
+};
