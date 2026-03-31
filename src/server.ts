@@ -5,6 +5,7 @@ import path from 'path';
 import { connectDB } from '@config/database';
 import { envs } from '@config/envs';
 import authRoutes from '@modules/auth/auth.routes';
+import promocionesRoutes from '@modules/promociones/promociones.routes';
 import { setupSwagger } from '@config/swagger';
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/promociones', promocionesRoutes);
 
 // Swagger
 setupSwagger(app);
