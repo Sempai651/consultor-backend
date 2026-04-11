@@ -22,19 +22,24 @@ export class AuthService {
     // Encriptar contraseña
     const passwordHash = await BcryptUtil.hash(data.password);
 
-    // Crear usuario
+    // Crear usuario (con rol por defecto 'cliente')
     const usuario = await UsuarioModel.create({
       nombre: data.nombre,
       apellido: data.apellido,
       cedula: data.cedula,
       email: data.email,
       password: passwordHash,
+      rol: 'cliente', // <--- NUEVO: rol por defecto
     });
 
     if (!usuario) throw new AppError('Error al crear usuario', 500);
 
-    // Generar token JWT
-    const token = JwtUtil.generate({ id: usuario.id, cedula: usuario.cedula });
+    // Generar token JWT (incluyendo el rol)
+    const token = JwtUtil.generate({ 
+      id: usuario.id, 
+      cedula: usuario.cedula,
+      rol: usuario.rol  // <--- NUEVO: incluir rol en el token
+    });
 
     return {
       token,
@@ -43,6 +48,7 @@ export class AuthService {
         nombre: usuario.nombre,
         cedula: usuario.cedula,
         email: usuario.email,
+        rol: usuario.rol,  // <--- NUEVO: devolver rol
       },
     };
   }
@@ -59,8 +65,12 @@ export class AuthService {
     const passwordValida = await BcryptUtil.compare(data.password, usuario.password);
     if (!passwordValida) throw new AppError('Credenciales incorrectas', 401);
 
-    // Generar token
-    const token = JwtUtil.generate({ id: usuario.id, cedula: usuario.cedula });
+    // Generar token JWT (incluyendo el rol)
+    const token = JwtUtil.generate({ 
+      id: usuario.id, 
+      cedula: usuario.cedula,
+      rol: usuario.rol  // <--- NUEVO: incluir rol en el token
+    });
 
     return {
       token,
@@ -69,6 +79,7 @@ export class AuthService {
         nombre: usuario.nombre,
         cedula: usuario.cedula,
         email: usuario.email,
+        rol: usuario.rol,  // <--- NUEVO: devolver rol
       },
     };
   }

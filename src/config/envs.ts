@@ -17,7 +17,7 @@ export const envs = {
   JWT_SECRET: getEnv('JWT_SECRET', 'mi_clave_secreta_david_2025'),
   JWT_EXPIRES_IN: getEnv('JWT_EXPIRES_IN', '24h'),
 
-  // MySQL (sin Sequelize)
+  // MySQL 
   DB_HOST: getEnv('DB_HOST', 'localhost'),
   DB_PORT: parseInt(getEnv('DB_PORT', '3306')),
   DB_USER: getEnv('DB_USER', 'root'),

@@ -3,9 +3,10 @@ import swaggerUi from 'swagger-ui-express'
 import { Express } from 'express'
 import { envs } from '@config/envs'
 
+// Configuracion principal de Swagger
 const options: swaggerJsdoc.Options = {
   definition: {
-    openapi: '3.0.0',      
+    openapi: '3.0.0',
     info: {
       title: 'Consultor API',
       version: '1.0.0',
@@ -31,11 +32,13 @@ const options: swaggerJsdoc.Options = {
       },
     },
   },
-  apis: ['./src/modules/**/*.routes.ts'],
+  apis: ['./src/modules/**/*.routes.ts'], // Busca comentarios en las rutas
 }
 
+// Genera el objeto con la especificacion
 const swaggerSpec = swaggerJsdoc(options)
 
+// Exportamos la funcion para configurar Swagger en la app
 export const setupSwagger = (app: Express): void => {
   app.use(
     '/api-docs',
@@ -43,7 +46,7 @@ export const setupSwagger = (app: Express): void => {
     swaggerUi.setup(swaggerSpec, {
       customSiteTitle: 'Consultor API Docs',
       swaggerOptions: {
-        persistAuthorization: true,
+        persistAuthorization: true, // Guarda el token al recargar
       },
     })
   )

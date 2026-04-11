@@ -9,6 +9,7 @@ interface UsuarioRow extends RowDataPacket {
   cedula: string;
   email: string;
   password: string;
+  rol: 'admin' | 'cliente';  // NUEVO CAMPO
   activo: number;
   tokenRecuperacion: string | null;
   tokenExpiracion: Date | null;
@@ -35,6 +36,16 @@ export const UsuarioModel = {
     return rows.length > 0 ? rows[0] : null;
   },
 
+  // Buscar por ID
+  findById: async (id: number): Promise<UsuarioRow | null> => {
+    const pool = getPool();
+    const [rows] = await pool.execute<UsuarioRow[]>(
+      'SELECT * FROM usuarios WHERE id = ?',
+      [id]
+    );
+    return rows.length > 0 ? rows[0] : null;
+  },
+
   // Buscar por token de recuperación
   findByToken: async (token: string): Promise<UsuarioRow | null> => {
     const pool = getPool();
@@ -45,19 +56,22 @@ export const UsuarioModel = {
     return rows.length > 0 ? rows[0] : null;
   },
 
-  // Crear usuario
+  // Crear usuario (con rol por defecto 'cliente')
   create: async (data: {
     nombre: string;
     apellido: string;
     cedula: string;
     email: string;
     password: string;
+    rol?: 'admin' | 'cliente';  // NUEVO: opcional, por defecto 'cliente'
   }): Promise<UsuarioRow | null> => {
     const pool = getPool();
+    const rol = data.rol || 'cliente';  // Por defecto cliente
+    
     const [result] = await pool.execute<OkPacket>(
-      `INSERT INTO usuarios (nombre, apellido, cedula, email, password) 
-       VALUES (?, ?, ?, ?, ?)`,
-      [data.nombre, data.apellido, data.cedula, data.email, data.password]
+      `INSERT INTO usuarios (nombre, apellido, cedula, email, password, rol) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [data.nombre, data.apellido, data.cedula, data.email, data.password, rol]
     );
     
     const [newUser] = await pool.execute<UsuarioRow[]>(
