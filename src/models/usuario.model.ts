@@ -9,13 +9,22 @@ interface UsuarioRow extends RowDataPacket {
   cedula: string;
   email: string;
   password: string;
-  rol: 'admin' | 'cliente';  // NUEVO CAMPO
+  rol: 'admin' | 'cliente';
   activo: number;
   tokenRecuperacion: string | null;
   tokenExpiracion: Date | null;
 }
 
 export const UsuarioModel = {
+  // Obtener todos los usuarios
+  findAll: async (): Promise<UsuarioRow[]> => {
+    const pool = getPool();
+    const [rows] = await pool.execute<UsuarioRow[]>(
+      'SELECT id, nombre, apellido, cedula, email, rol, activo, createdAt, updatedAt FROM usuarios ORDER BY id DESC'
+    );
+    return rows;
+  },
+
   // Buscar por cédula
   findByCedula: async (cedula: string): Promise<UsuarioRow | null> => {
     const pool = getPool();
@@ -63,10 +72,10 @@ export const UsuarioModel = {
     cedula: string;
     email: string;
     password: string;
-    rol?: 'admin' | 'cliente';  // NUEVO: opcional, por defecto 'cliente'
+    rol?: 'admin' | 'cliente';
   }): Promise<UsuarioRow | null> => {
     const pool = getPool();
-    const rol = data.rol || 'cliente';  // Por defecto cliente
+    const rol = data.rol || 'cliente';
     
     const [result] = await pool.execute<OkPacket>(
       `INSERT INTO usuarios (nombre, apellido, cedula, email, password, rol) 
@@ -93,5 +102,15 @@ export const UsuarioModel = {
       [id]
     );
     return updated.length > 0 ? updated[0] : null;
+  },
+
+  // Eliminar usuario por ID
+  delete: async (id: number): Promise<boolean> => {
+    const pool = getPool();
+    const [result] = await pool.execute<OkPacket>(
+      'DELETE FROM usuarios WHERE id = ?',
+      [id]
+    );
+    return result.affectedRows > 0;
   },
 };
